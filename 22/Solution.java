@@ -29,13 +29,19 @@ import java.util.*;
 //     }
 // }
 
+//own dp 
+//Time O()
 class Solution {
+    private HashMap<Integer, List<String>> hm = new HashMap<>(); 
+
+    public Solution(){
+        hm.put(1, Arrays.asList("()")); 
+        hm.put(2, Arrays.asList("()()", "(())")); 
+    }
+
     public List<String> generateParenthesis(int n) {
-        if (n == 1) {
-            return Arrays.asList("()");
-        }
-        else if (n == 2) {
-            return Arrays.asList("()()", "(())");
+        if (hm.containsKey(n)) {
+            return hm.get(n); 
         }
         else {
             List<String> currList = new ArrayList<>();
@@ -53,14 +59,14 @@ class Solution {
                     currList.add("(" + str3 + ")"); 
                 }
             }
-
-            // remove dup
-            HashMap<String, Integer> hm = new HashMap<>();
-            for (String str : currList) {
-                hm.put(str, hm.getOrDefault(str, 0) + 1);
+            HashMap<String, Integer> tempHm = new HashMap<>(); 
+            for(String str:currList){
+                tempHm.put(str, tempHm.getOrDefault(str, 0) + 1); 
             }
-            return new ArrayList<String>(hm.keySet());
-
+            currList = new ArrayList<String>(tempHm.keySet()); 
+            hm.put(n, currList); 
+            return currList;
         }
     }
 }
+
