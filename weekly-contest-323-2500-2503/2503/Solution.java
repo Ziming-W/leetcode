@@ -1,59 +1,90 @@
-//backtracking
-//DFS
+//BFS success but TLE
 import java.util.*; 
 class Solution {
     public int[] maxPoints(int[][] grid, int[] queries) {
-        int m = grid.length; 
-        int n = grid[0].length; 
-        int[] solutionQuery = new int[queries.length];
-        boolean[] branchControl = new boolean[queries.length];  
-        //matrix check which grid has been visited
-        int[][] mark = new int[m][n];
-        for(int x = 0; x < m; x++){
-            for(int y = 0; y < n; y++){
-                mark[x][y] = 0; 
+        //sorted queries
+        int[] sortedQueries = new int[queries.length]; 
+        for(int i = 0; i < queries.length; i++){
+            sortedQueries[i] = queries[i]; 
+        }
+        Arrays.sort(sortedQueries); 
+        //initial q with upper left 0 0
+        List<List<Integer>> q = new ArrayList<>();
+        q.add(Arrays.asList(0, 0)); 
+        //visited points 
+        boolean[][] visited = new boolean[grid.length][grid[0].length]; 
+        for(int i = 0; i < grid.length; i++){
+            for(int j = 0; j < grid[0].length; j++){
+                visited[i][j] = false; 
             }
         }
-        int max = 0; 
-        for(int i = 0; i < queries.length; i++){
-            max = (queries[i] > max) ? queries[i] : max; 
-            branchControl[i] = true; 
+        //store result queries
+        Map<Integer, Integer> resultHM = new HashMap<>(); 
+        int[] prevCount = {0}; 
+        //run bfs asce
+        for(int i = 0;  i < queries.length; i++){
+            q = bfs(q, sortedQueries[i], prevCount, queries, resultHM, visited, grid);
         }
-        //hashtable to store visited information
-        List<HashMap<List<Integer>, Integer>> visited = new ArrayList<>(); 
-        solve(mark, grid, max, queries, solutionQuery, branchControl, 0, 0); 
-        return solutionQuery; 
+        //output result queries
+        int[] resultQueries = new int[queries.length]; 
+        for(int i = 0; i < queries.length; i++){
+            resultQueries[i] = resultHM.get(queries[i]); 
+        }
+        return resultQueries; 
     }
 
-    public void solve(int[][] mark, int[][] grid, int maxElem, int[] inputQuery, int[] solutionQuery, boolean[] branchControl, int x, int y){
-        int m = grid.length; 
-        int n = grid[0].length; 
-        int leftX = x - 1; 
-        int rightX = x + 1; 
-        int upY = y - 1; 
-        int downY = y + 1; 
-        List<List<Integer>> candidates = new ArrayList<>(); 
-        candidates.add(Arrays.asList(leftX, y)); 
-        candidates.add(Arrays.asList(rightX, y)); 
-        candidates.add(Arrays.asList(x, upY)); 
-        candidates.add(Arrays.asList(x, downY)); 
-        System.out.println("old" + Arrays.toString(branchControl)); 
-        for(int i = 0; i < inputQuery.length; i++){
-            solutionQuery[i] += (grid[x][y] < inputQuery[i] && mark[x][y] == 0 && branchControl[i]) ? 1 : 0; //local accumalator
-            branchControl[i] = branchControl[i] && ((grid[x][y] < inputQuery[i]) ? true: false);
-        }
-        System.out.println("solve" + x + y + " " + solutionQuery[0]); 
-        System.out.println("new" + Arrays.toString(branchControl)); 
-        System.out.println(); 
-        mark[x][y] = 1; 
-        for(List<Integer> candidate:candidates){
-            int candidateX = candidate.get(0); 
-            int candidateY = candidate.get(1); 
-            //System.out.println("test: " + candidateX + candidateY);
-            if(0 <= candidateX && candidateX < m && 0 <= candidateY && candidateY < n && grid[candidateX][candidateY] < maxElem && mark[candidateX][candidateY] == 0){
-                boolean[] newBranchContrl = Arrays.copyOf(branchControl, branchControl.length); 
-                solve(mark, grid, maxElem, inputQuery, solutionQuery, newBranchContrl, candidateX, candidateY); 
+    public List<List<Integer>> bfs(List<List<Integer>> q, int currQElem, int[] prevCount, int[] queries, Map<Integer, Integer> resultHM, boolean[][] visited, int[][] grid){
+        List<List<Integer>> newQ = new ArrayList<>(); 
+        int count = 0; 
+        while(!q.isEmpty()){
+            List<Integer> currPoint = q.remove(0); 
+            int x = currPoint.get(0); 
+            int y = currPoint.get(1); 
+            //check availability of curr grid point
+            if(visited[x][y]){
+                continue; 
+            } 
+            // if grid point is bigger or equal to currQElem,
+            // no need to check neighbours here, add to new Q directly
+            // and don't mark this point as visited
+            if (currQElem <= grid[x][y]) {
+                newQ.add(Arrays.asList(x, y));
+                continue;
+            }
+            //visit this point
+            visited[x][y] = true; 
+            //update current count
+            count ++; 
+            //check neighbours
+            int m = grid.length; 
+            int n = grid[0].length; 
+            int leftX = x - 1; 
+            int rightX = x + 1; 
+            int upY = y - 1; 
+            int downY = y + 1; 
+            List<List<Integer>> candidates = new ArrayList<>(); 
+            candidates.add(Arrays.asList(leftX, y)); 
+            candidates.add(Arrays.asList(rightX, y)); 
+            candidates.add(Arrays.asList(x, upY)); 
+            candidates.add(Arrays.asList(x, downY)); 
+            for(List<Integer> candidate:candidates){
+                int candidateX = candidate.get(0); 
+                int candidateY = candidate.get(1); 
+                if(0 <= candidateX && candidateX < m && 0 <= candidateY && candidateY < n && !visited[candidateX][candidateY]){
+                    if(currQElem > grid[candidateX][candidateY]){
+                        q.add(Arrays.asList(candidateX, candidateY)); 
+                    }
+                    else{
+                        newQ.add(Arrays.asList(candidateX, candidateY)); 
+                    }
+                } 
             }
         }
+        count += prevCount[0]; 
+        prevCount[0] = count; 
+        resultHM.put(currQElem, count); 
+        //System.out.println(newQ.toString()); 
+        return newQ; 
     }
+       
 }
