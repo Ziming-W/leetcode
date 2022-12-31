@@ -1,31 +1,36 @@
-import java.util.*; 
 class Solution {
     public void nextPermutation(int[] nums) {
-        int[] sorted = new int[nums.length]; 
-        for(int i = 0; i < nums.length; i++){
-            sorted[i] = nums[i]; 
-        }
-        Arrays.sort(sorted); 
-        if(nums.length == 1){
-            return; 
-        }
-        for(int i = 0; i < nums.length - 1; i++){
-            if(nums[i] > nums[i + 1]){
-                int[] front = Arrays.copyOfRange(nums, 0, i); 
-                int[] back = Arrays.copyOfRange(nums, i + 1, nums.length); 
-                int[] sortedBack = new int[back.length]; 
-                for(int x = 0; x < back.length; x++){
-                    
-                }
-                for(int j = 0; j < nums.length - 1; j++){
-                    if(sorted[j] == nums[i+1] && sorted[j+1] > nums[i+1]){
-
-                    }
-                }
+        int i = nums.length - 1; 
+        while(i > 0){
+            if(nums[i] > nums[i - 1]){
+                break; 
             }
-        } 
+            i--; 
+        }
+        //if desce
+        if(i == 0){
+            reverse(nums, 0, nums.length - 1);
+            return;  
+        }
+        int j = nums.length - 1; 
+        while(j >= i){
+            if(nums[j] > nums[i - 1]){
+                swap(nums, i - 1, j); 
+                break; 
+            }
+            j--; 
+        }
+        reverse(nums, i, nums.length - 1); 
+    
+    }
 
-
-
+    public void swap(int[] A, int i, int j) {
+        int tmp = A[i];
+        A[i] = A[j];
+        A[j] = tmp;
+    }
+    
+    public void reverse(int[] A, int start, int end) {
+        while(start < end) swap(A, start++, end--);
     }
 }
